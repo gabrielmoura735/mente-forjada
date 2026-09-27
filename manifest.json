@@ -1,0 +1,21 @@
+{
+    "name": "Mente Forjada - Princípios de Aço & Ação Diária",
+    "short_name": "Mente Forjada",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#07090c",
+    "theme_color": "#07090c",
+    "description": "Plataforma pessoal de princípios, desenvolvimento de caráter, autoexame diário e contratos de ação.",
+    "icons": [
+        {
+            "src": "https://ui-avatars.com/api/?name=MF&background=f5b73d&color=000&size=192",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://ui-avatars.com/api/?name=MF&background=f5b73d&color=000&size=512",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

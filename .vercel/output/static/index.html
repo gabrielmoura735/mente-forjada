@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mente Forjada | Princípios de Aço, Caráter & Ação</title>
+    
+    <!-- Meta & PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#07090c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Plataforma de princípios estoicos, desenvolvimento de caráter, maturidade e reflexão prática.">
+
+    <!-- Tipografia Nobre: Cinzel & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- CABEÇALHO SUPERIOR GLOBAL -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-shield">
+                <i class="ph-fill ph-fire"></i>
+            </div>
+            <div class="logo-titles">
+                <h1>MENTE FORJADA</h1>
+                <span class="logo-tagline">Caráter • Disciplina • Ação</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <!-- Botão Global de Forjar / Criar Frase -->
+            <button id="btn-open-global-forge" class="btn-forge-global" title="Forjar Frase (Livre ou Inspirada)">
+                <i class="ph-bold ph-plus-circle"></i>
+                <span>+ Forjar Frase</span>
+            </button>
+
+            <!-- Toggle de Efeitos Sonoros -->
+            <button id="btn-toggle-sfx" class="btn-icon-control active" title="Efeitos Sonoros Táteis (Ligado/Desligado)">
+                <i class="ph-bold ph-speaker-high" id="sfx-icon"></i>
+            </button>
+
+            <!-- Som Ambiente Estoico -->
+            <button id="btn-ambient-audio" class="btn-icon-ambient" title="Som Ambiente de Foco (Chuva & Harmônicos)">
+                <div class="audio-waves" id="audio-waves">
+                    <span></span><span></span><span></span>
+                </div>
+                <i class="ph-bold ph-headphones"></i>
+                <span class="desktop-only" id="audio-status-label">Foco Zen</span>
+            </button>
+
+
+
+            <!-- Frase na Tela de Bloqueio & Despertar Diário -->
+            <button id="btn-open-lockscreen-modal" class="btn-icon-ambient" title="Frase na Tela de Bloqueio & Despertar Diário" onclick="document.getElementById('modal-lockscreen-setup').style.display='flex'">
+                <i class="ph-bold ph-device-mobile"></i>
+                <span class="desktop-only" data-i18n="nav_lockscreen">Tela de Bloqueio</span>
+            </button>
+
+            <!-- Comunidade & Feedbacks -->
+            <button id="btn-open-community-modal" class="btn-icon-ambient" title="Mural da Comunidade" onclick="document.getElementById('modal-community').style.display='flex'; renderCommunityFeed();">
+                <i class="ph-bold ph-heart"></i>
+                <span class="desktop-only">Comunidade</span>
+            </button>
+
+            <!-- Configurações da Conta/App -->
+            <button id="btn-open-settings-modal" class="btn-icon-ambient" title="Configurações (Idioma e Voz)" onclick="document.getElementById('modal-settings').style.display='flex'; if(window.populateVoiceSelect) window.populateVoiceSelect();">
+                <i class="ph-bold ph-gear"></i>
+                <span class="desktop-only" data-i18n="nav_settings">Configurações</span>
+            </button>
+
+            <!-- Streak Tracker -->
+            <div class="streak-badge" title="Dias Consecutivos de Autoexame & Foco">
+                <i class="ph-fill ph-flame"></i>
+                <span id="streak-counter">1</span> <span class="desktop-only">Dias</span>
+            </div>
+
+            <!-- Botão Princípio Aleatório -->
+            <button id="btn-random-principle" class="btn-gold-action" title="Sortear Princípio para Agora">
+                <i class="ph-bold ph-lightning"></i>
+                <span class="desktop-only">Inspirar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- BANNER HERO: MANDAMENTO DO DIA -->
+    <section class="hero-pledge">
+        <div class="pledge-icon">
+            <i class="ph-bold ph-shield-chevron"></i>
+        </div>
+        <div class="pledge-text">
+            <span class="pledge-badge">Mandamento do Dia</span>
+            <p id="daily-pledge-text">"Carregando o mandamento de hoje..."</p>
+            <p id="daily-pledge-author" style="margin-top: 10px; font-size: 0.9rem; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;"></p>
+        </div>
+    </section>
+
+    <!-- FILTROS DE AUTORIA & CONTROLES -->
+    <section class="controls-area">
+        <div class="top-controls-row">
+            <!-- Barra de Pesquisa -->
+            <div class="search-box">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="input-search" placeholder="Pesquisar por autores (Marco Aurélio, Musashi...), desculpas, temas..." autocomplete="off">
+                <button id="btn-clear-search" class="btn-clear" style="display: none;">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <!-- Filtro de Origem / Autoria -->
+            <div class="authorship-filter">
+                <button class="author-pill active" data-author="all">
+                    <i class="ph ph-stack"></i> Todos (<span id="count-all-pills">0</span>)
+                </button>
+                <button class="author-pill" data-author="master">
+                    <i class="ph-fill ph-shield-check"></i> Princípios do Mestre (<span id="count-master-pills">0</span>)
+                </button>
+                <button class="author-pill" data-author="classics">
+                    <i class="ph-fill ph-scroll"></i> Clássicos & Filósofos (<span id="count-classics-pills">0</span>)
+                </button>
+                <button class="author-pill" data-author="user">
+                    <i class="ph ph-user-circle"></i> Minhas Criações (<span id="count-user-pills">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- Carrossel de Trilhas -->
+        <div class="trails-scroll">
+            <div class="trails-container" id="trails-chips">
+                <button class="trail-chip active" data-cat="all">
+                    <i class="ph ph-squares-four"></i> Todas as Trilhas (<span id="count-all">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="mente">
+                    <i class="ph ph-brain"></i> Mente & Autodomínio (<span id="count-mente">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="esforco">
+                    <i class="ph ph-barbell"></i> Esforço & Disciplina (<span id="count-esforco">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="cicatrizes">
+                    <i class="ph ph-first-aid"></i> Cicatrizes & Erros (<span id="count-cicatrizes">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="silencio">
+                    <i class="ph ph-chat-slash"></i> O Poder do Silêncio (<span id="count-silencio">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="relacoes">
+                    <i class="ph ph-users-four"></i> Círculo de Caráter (<span id="count-relacoes">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="hombridade">
+                    <i class="ph ph-sword"></i> Hombridade & Peso (<span id="count-hombridade">0</span>)
+                </button>
+                <button class="trail-chip" data-cat="acao">
+                    <i class="ph ph-target"></i> Sonhos na Ação (<span id="count-acao">0</span>)
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTEÚDO PRINCIPAL (TABS) -->
+    <main class="app-main-content">
+    
+        <!-- BANNER DE MISSÃO ATIVA -->
+        <div id="active-mission-banner" style="display: none; background: linear-gradient(135deg, rgba(245, 183, 61, 0.1), rgba(0,0,0,0.8)); border: 1px solid var(--accent-color); border-radius: 8px; margin: 20px; padding: 15px; position: relative;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="background: var(--accent-color); color: #000; padding: 10px; border-radius: 50%;">
+                    <i class="ph-bold ph-target" style="font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h4 style="color: var(--accent-color); margin: 0 0 5px 0; font-family: 'Cinzel', serif; font-size: 0.9rem;">CONTRATO ATIVO</h4>
+                    <p id="active-mission-text" style="margin: 0; font-size: 0.95rem; color: #fff;"></p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('active-mission-banner').style.display='none'" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #666; cursor: pointer;">
+                <i class="ph-bold ph-x"></i>
+            </button>
+        </div>
+
+        <!-- ABA 1: AS TRILHAS (BIBLIOTECA COMPLETA) -->
+        <section id="tab-library" class="tab-pane active">
+            <div class="pane-title-bar">
+                <div>
+                    <h2>Trilhas de Princípios & Filosofia Prática</h2>
+                    <p>Máximas forjadas para governar seus pensamentos, com explicação didática e espaço para debate.</p>
+                </div>
+                <div class="active-counter-pill">
+                    Exibindo <strong id="counter-visible">0</strong> princípios
+                </div>
+            </div>
+
+            <div id="grid-principles" class="principles-grid">
+                <!-- Cards injetados via JS -->
+            </div>
+
+            <div id="library-empty" class="empty-state" style="display: none;">
+                <i class="ph ph-magnifying-glass"></i>
+                <h3>Nenhum princípio encontrado</h3>
+                <p>Nenhum resultado corresponde à sua pesquisa. Tente outros termos ou limpe o filtro.</p>
+                <button id="btn-reset-library" class="btn-outline-gold">Restaurar Visualização</button>
+            </div>
+        </section>
+
+        <!-- ABA 2: A FORJA (CRIAR PRÓPRIO PRINCÍPIO) -->
+        <section id="tab-forge" class="tab-pane">
+            <div class="pane-title-bar">
+                <div>
+                    <h2>A Forja de Máximas</h2>
+                    <p>Forje novos princípios, com a opção de vincular a uma máxima já existente do acervo ou criar de forma 100% livre.</p>
+                </div>
+            </div>
+
+            <div class="forge-container">
+                <!-- Formulário Inline de Criação -->
+                <div class="forge-form-card">
+                    <div class="forge-card-title">
+                        <i class="ph-bold ph-hammer"></i> Bigorna da Criação
+                    </div>
+
+                    <form id="form-forge-principle">
+                        <!-- Seleção do Modo de Criação -->
+                        <div class="creation-mode-selector">
+                            <label class="mode-radio">
+                                <input type="radio" name="creation-origin-type" value="free" checked>
+                                <span class="radio-custom"></span>
+                                <span class="mode-label">
+                                    <strong>✍️ Frase 100% Livre</strong>
+                                    <small>Seu pensamento autoral autônomo</small>
+                                </span>
+                            </label>
+                            <label class="mode-radio">
+                                <input type="radio" name="creation-origin-type" value="reference">
+                                <span class="radio-custom"></span>
+                                <span class="mode-label">
+                                    <strong>🔗 Inspirada em uma Referência do Acervo</strong>
+                                    <small>Sua reflexão conectada a uma máxima existente</small>
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Dropdown de Referência -->
+                        <div class="input-field" id="box-select-reference" style="display: none;">
+                            <label for="select-reference-principle">Escolha a máxima que inspirou seu pensamento:</label>
+                            <select id="select-reference-principle">
+                                <!-- Opções injetadas dinamicamente via JS -->
+                            </select>
+                        </div>
+
+                        <div class="input-field">
+                            <label for="forge-text">Sua Máxima / Frase Forjada *</label>
+                            <textarea id="forge-text" placeholder="Ex: O homem maduro sustenta suas palavras com atitudes, não com promessas..." rows="3" required></textarea>
+                        </div>
+
+                        <div class="input-row">
+                            <div class="input-field flex-1">
+                                <label for="forge-author-name">Assinatura / Autor</label>
+                                <input type="text" id="forge-author-name" placeholder="Ex: Seu Nome ou 'Guerreiro da Forja'">
+                            </div>
+
+                            <div class="input-field flex-1">
+                                <label for="forge-cat">Trilha / Domínio</label>
+                                <select id="forge-cat">
+                                    <option value="mente">🧠 Mente & Autodomínio</option>
+                                    <option value="esforco">💪 Esforço & Disciplina</option>
+                                    <option value="cicatrizes">🛡️ Cicatrizes & Erros</option>
+                                    <option value="silencio">🤫 O Poder do Silêncio</option>
+                                    <option value="relacoes">👥 Círculo de Caráter</option>
+                                    <option value="hombridade">🏛️ Hombridade & Peso</option>
+                                    <option value="acao">⚡ Sonhos na Ação</option>
+                                    <option value="autoral">🔥 Mandamento Autoral</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-field">
+                            <label for="forge-origin">A Cicatriz / Explicação da Lição (Opcional)</label>
+                            <input type="text" id="forge-origin" placeholder="Ex: Aprendi após falhar por procrastinar...">
+                        </div>
+
+                        <!-- Seletor de Tema Visual do Card -->
+                        <div class="input-field">
+                            <label>Tema Estético do Card:</label>
+                            <div class="theme-picker">
+                                <button type="button" class="btn-theme-choice active" data-theme="gold">
+                                    <span class="dot-color dot-gold"></span> Ouro Forjado
+                                </button>
+                                <button type="button" class="btn-theme-choice" data-theme="obsidian">
+                                    <span class="dot-color dot-obsidian"></span> Obsidiana Negra
+                                </button>
+                                <button type="button" class="btn-theme-choice" data-theme="crimson">
+                                    <span class="dot-color dot-crimson"></span> Chama Rubra
+                                </button>
+                                <button type="button" class="btn-theme-choice" data-theme="emerald">
+                                    <span class="dot-color dot-emerald"></span> Esmeralda Estoica
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="forge-actions-row">
+                            <button type="submit" class="btn-submit-gold flex-1">
+                                <i class="ph-bold ph-anvil"></i> Salvar na Minha Forja
+                            </button>
+                            <button type="button" id="btn-download-preview-card" class="btn-export-image" title="Baixar Card em Imagem de Alta Resolução">
+                                <i class="ph-bold ph-image-square"></i> Baixar Imagem (PNG)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Preview em Tempo Real -->
+                <div class="forge-preview-box">
+                    <span class="preview-label">PRÉ-VISUALIZAÇÃO AO VIVO DO SEU CARD</span>
+                    <div class="preview-card-render theme-gold" id="forge-live-preview">
+                        <div class="preview-top-tags">
+                            <div class="preview-card-cat" id="preview-cat-display">🔥 Mandamento Autoral</div>
+                            <div class="preview-ref-tag" id="preview-ref-tag" style="display: none;">
+                                <i class="ph-bold ph-link"></i> <span id="preview-ref-text">Ref. ao Acervo</span>
+                            </div>
+                        </div>
+                        <p class="preview-card-text" id="preview-text-display">"O que você não assume como responsabilidade continuará te dominando."</p>
+                        <div class="preview-footer-info">
+                            <span class="preview-card-author" id="preview-author-display">— Forjado por Você</span>
+                            <span class="preview-card-origin" id="preview-origin-display">Forjado na Prática</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Princípios Forjados pelo Usuário -->
+            <div class="user-principles-section">
+                <div class="section-sub-header">
+                    <h3>Seus Mandamentos Forjados (<span id="user-principles-total">0</span>)</h3>
+                </div>
+                <div id="grid-user-principles" class="principles-grid">
+                    <!-- Cards do Usuário via JS -->
+                </div>
+                <div id="user-empty-state" class="empty-state" style="display: none;">
+                    <i class="ph ph-scroll"></i>
+                    <h3>Você ainda não forjou seus próprios princípios</h3>
+                    <p>Use o painel acima para registrar verdades que você descobriu vivendo, errando e se superando.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 3: VISUALIZAÇÃO (IMAGENS) -->
+        <section id="tab-visuals" class="tab-pane" style="display: none; padding: 0; height: calc(100vh - 70px); overflow: hidden; position: relative;">
+            <div id="visual-image-container" style="width: 100%; height: 100%; background: #000; background-size: cover; background-repeat: no-repeat; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; position: relative; border: none; outline: none;">
+                <!-- Overlay Escuro -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1;"></div>
+                
+                <div style="position: relative; z-index: 2; width: 100%; max-width: 800px;">
+                    <div style="margin-bottom: 30px;">
+                        <i class="ph-bold ph-quotes" style="font-size: 3rem; color: var(--accent-color); opacity: 0.8;"></i>
+                    </div>
+                    <p id="visual-quote" style="font-size: clamp(1.5rem, 4vw, 2.5rem); font-family: var(--font-primary); font-weight: 700; color: #fff; line-height: 1.4; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);"></p>
+                    <p id="visual-author" style="font-size: clamp(1rem, 2vw, 1.2rem); color: var(--accent-color); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);"></p>
+                </div>
+            </div>
+            <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; gap: 15px;">
+                <button class="btn-primary" onclick="generateNextVisual()" title="Sortear nova imagem e frase">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Próxima Visão
+                </button>
+            </div>
+        </section>
+
+        <!-- ABA 3: SANTUÁRIO (REFLEXÃO & DIÁRIO) -->
+        <section id="tab-sanctuary" class="tab-pane">
+            <div class="pane-title-bar">
+                <div>
+                    <h2>Diário de Aço</h2>
+                    <p>Suas 5 missões de reflexão diária. Leia e escreva sua interpretação para forjar o seu caráter de hoje.</p>
+                </div>
+            </div>
+
+            <div id="daily-reflections-container" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
+                <!-- 5 frases renderizadas via JS -->
+            </div>
+        </section>
+
+        
+
+        <!-- ABA 4: MISSÕES (CONTRATOS DE 24 HORAS) -->
+        <section id="tab-missions" class="tab-pane">
+            <div class="pane-title-bar">
+                <div>
+                    <h2>Missões & Contratos de Ação</h2>
+                    <p>Compromissos práticos de 24 horas assumidos para não deixar a sabedoria morrer na teoria.</p>
+                </div>
+                <div class="active-counter-pill">
+                    <span id="missions-completed-count">0</span> concluídas
+                </div>
+            </div>
+
+            <!-- Banco de Missões Predefinidas -->
+            <div class="predefined-missions" style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px; color: var(--accent-color); font-family: 'Cinzel', serif;">Missões Guiadas</h3>
+                <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 15px;">Escolha um foco para o seu dia e assuma o compromisso.</p>
+                <div id="missions-bank-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+                    <!-- Missões predefinidas geradas via JS -->
+                </div>
+            </div>
+
+            <!-- Criador Rápido de Missão -->
+            <div class="quick-mission-card">
+                <form id="form-quick-mission">
+                    <input type="text" id="quick-mission-input" placeholder="Qual atitude inegociável você cumprirá nas próximas 24 horas?" required>
+                    <button type="submit" class="btn-gold-action">
+                        <i class="ph-bold ph-check"></i> Assumir
+                    </button>
+                </form>
+            </div>
+
+            <div id="missions-list-container" class="missions-list">
+                <!-- Missões via JS -->
+            </div>
+
+            <div id="missions-empty" class="empty-state" style="display: none;">
+                <i class="ph ph-shield-check"></i>
+                <h3>Nenhum contrato ativo</h3>
+                <p>Assuma um compromisso acima ou clique em "Refletir" em uma frase para transformar sabedoria em atitude real.</p>
+            </div>
+        </section>
+
+        <!-- ABA 5: FAVORITOS -->
+        <section id="tab-favorites" class="tab-pane">
+            <div class="pane-title-bar">
+                <div>
+                    <h2>Princípios Guardados</h2>
+                    <p>Seu arsenal de consulta rápida nos momentos em que precisar de clareza e firmeza.</p>
+                </div>
+            </div>
+
+            <div id="grid-favorites" class="principles-grid">
+                <!-- Favoritos via JS -->
+            </div>
+
+            <div id="favorites-empty" class="empty-state" style="display: none;">
+                <i class="ph ph-star"></i>
+                <h3>Nenhum princípio favoritado</h3>
+                <p>Marque com estrela as máximas que mais acertaram seu coração para tê-las sempre à mão.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTÃO FLUTUANTE (FAB) PARA CELULAR: FORJAR RÁPIDO -->
+    <button id="fab-forge-mobile" class="fab-forge-btn" title="Forjar Nova Frase">
+        <i class="ph-bold ph-plus"></i>
+        <span>Forjar</span>
+    </button>
+
+    <!-- NAVEGAÇÃO INFERIOR / APP BAR -->
+    <nav class="app-bottom-nav">
+        <button class="nav-tab-btn active" data-target="tab-library">
+            <i class="ph ph-shield"></i>
+            <span>Trilhas</span>
+        </button>
+        <button class="nav-tab-btn" data-target="tab-forge">
+            <i class="ph ph-hammer"></i>
+            <span>A Forja</span>
+        </button>
+        <button class="nav-tab-btn" data-target="tab-sanctuary">
+            <i class="ph ph-notebook"></i>
+            <span>Diário</span>
+        </button>
+        <button class="nav-tab-btn" data-target="tab-missions">
+            <i class="ph ph-check-square"></i>
+            <span>Missões</span>
+        </button>
+        <button class="nav-tab-btn" data-target="tab-favorites">
+            <i class="ph ph-star"></i>
+            <span>Favoritos</span>
+        </button>
+    </nav>
+
+    <!-- MODAL IMERSIVO: O AUTOEXAME (REFLEXÃO GUIADA) -->
+    <div id="modal-reflection" class="app-modal-overlay" style="display: none;">
+        <div class="app-modal-box">
+            <button class="btn-modal-close" id="btn-close-reflection" aria-label="Fechar">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-trail-badge" id="modal-badge-cat">
+                <i class="ph-bold ph-compass"></i> Mente & Autodomínio
+            </div>
+
+            <!-- Citação em Destaque -->
+            <div class="modal-quote-container">
+                <i class="ph-fill ph-quotes quote-bg-icon"></i>
+                <blockquote id="modal-quote-text" class="modal-quote-body">
+                    "O seu maior inimigo não são as pessoas e nem o mundo: é você mesmo, seus medos e suas desculpas."
+                </blockquote>
+            </div>
+
+            <!-- Perguntas de Autoexame Provocativas -->
+            <div class="self-inquiry-box">
+                <div class="inquiry-header">
+                    <i class="ph-bold ph-lightbulb"></i> Autoexame Guiado:
+                </div>
+                <div class="inquiry-prompt" id="modal-inquiry-prompt">
+                    Qual é a desculpa que você mais tem contado a si mesmo para adiar o que sabe que precisa ser feito?
+                </div>
+            </div>
+
+            <!-- Campo de Ação de 24 Horas -->
+            <div class="form-group-modal">
+                <label for="modal-contract-input">
+                    <i class="ph-bold ph-target"></i> Contrato de Ação (O que você executará nas próximas 24h?):
+                </label>
+                <input type="text" id="modal-contract-input" placeholder="Ex: Vou treinar no horário estipulado sem mexer no celular antes...">
+            </div>
+
+            <!-- Diário Pessoal -->
+            <div class="form-group-modal">
+                <label for="modal-notes-input">
+                    <i class="ph-bold ph-note-pencil"></i> Suas Notas & Reflexão Pessoal:
+                </label>
+                <textarea id="modal-notes-input" placeholder="Escreva com sinceridade: o que essa frase escancarou sobre o seu momento atual?" rows="3"></textarea>
+            </div>
+
+            <div class="modal-footer-actions">
+                <button id="btn-save-reflection" class="btn-submit-gold">
+                    <i class="ph-bold ph-floppy-disk"></i> Selar Reflexão & Assumir Missão
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE COMENTÁRIOS & DEBATE COMUNITÁRIO -->
+    <div id="modal-comments" class="app-modal-overlay" style="display: none;">
+        <div class="app-modal-box comments-modal-box">
+            <button class="btn-modal-close" id="btn-close-comments" aria-label="Fechar Comentários">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="comments-modal-header">
+                <span class="modal-trail-badge">
+                    <i class="ph-bold ph-chats-circle"></i> DEBATE & REFLEXÃO
+                </span>
+                <h3 id="comments-principle-quote" class="comments-quote-title">"Frase Selecionada"</h3>
+                <span id="comments-principle-meta" class="comments-quote-meta">Autor / Referência</span>
+            </div>
+
+            <!-- Formulário para Postar Comentário -->
+            <form id="form-post-comment" class="comment-post-form">
+                <div class="comment-form-row">
+                    <input type="text" id="comment-author-name" placeholder="Seu Nome ou Codinome (Ex: Marcus, Guerreiro...)" required>
+                </div>
+                <div class="comment-form-row">
+                    <textarea id="comment-text-input" placeholder="Compartilhe seu insight: como você aplica essa máxima ou que lição aprendeu com ela?" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn-submit-comment">
+                    <i class="ph-bold ph-paper-plane-tilt"></i> Publicar Minha Reflexão
+                </button>
+            </form>
+
+            <!-- Lista de Comentários / Feed -->
+            <div class="comments-feed-wrapper">
+                <div class="comments-feed-title">
+                    <h4>Discussões & Vivências da Forja (<span id="comments-total-counter">0</span>)</h4>
+                </div>
+                <div id="comments-feed-list" class="comments-feed-list">
+                    <!-- Comentários injetados via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STICKY PODCAST BAR (RÁDIO FORJADA / PODCAST OFFLINE & ONLINE) -->
+    <aside id="podcast-sticky-bar" class="podcast-sticky-bar" style="display: none;">
+        <div class="podcast-inner">
+            <div class="podcast-left">
+                <div class="podcast-cover-art" id="podcast-cover-art">
+                    <i class="ph-bold ph-broadcast"></i>
+                    <div class="podcast-pulse-anim" id="podcast-pulse"></div>
+                </div>
+                <div class="podcast-info">
+                    <div class="podcast-tag"><i class="ph-fill ph-headphones"></i> RÁDIO FORJADA • PODCAST OFFLINE</div>
+                    <div class="podcast-title" id="podcast-current-title">Carregando princípio...</div>
+                    <div class="podcast-author" id="podcast-current-author">Marco Aurélio</div>
+                </div>
+            </div>
+            
+            <div class="podcast-controls">
+                <button id="podcast-btn-prev" class="podcast-ctrl-btn" title="Princípio Anterior">
+                    <i class="ph-bold ph-skip-back"></i>
+                </button>
+                <button id="podcast-btn-play-pause" class="podcast-ctrl-play" title="Tocar / Pausar">
+                    <i class="ph-fill ph-play" id="podcast-play-icon"></i>
+                </button>
+                <button id="podcast-btn-next" class="podcast-ctrl-btn" title="Próximo Princípio">
+                    <i class="ph-bold ph-skip-forward"></i>
+                </button>
+                <button id="podcast-btn-speed" class="podcast-speed-btn" title="Velocidade da Narração">
+                    <span id="podcast-speed-label">1.0x</span>
+                </button>
+                <button id="podcast-btn-toggle-mode" class="podcast-mode-btn" title="Alternar: Apenas Frase ou Episódio Completo com Explicação">
+                    <i class="ph-bold ph-book-open-text"></i> <span class="desktop-only" id="podcast-mode-label">Completo</span>
+                </button>
+                <button id="podcast-btn-close" class="podcast-close-btn" title="Fechar Player">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+        </div>
+        <div class="podcast-progress-wrap">
+            <div class="podcast-progress-bar" id="podcast-progress-fill"></div>
+        </div>
+    </aside>
+
+    <!-- MODAL DE CONFIGURAÇÃO: FRASE NA TELA DE BLOQUEIO DO CELULAR -->
+    <div id="modal-lockscreen-setup" class="app-modal-overlay" style="display: none;">
+        <div class="app-modal-box lockscreen-modal-box">
+            <button class="btn-modal-close" id="btn-close-lockscreen-modal" aria-label="Fechar" onclick="document.getElementById('modal-lockscreen-setup').style.display='none'">
+                <i class="ph-bold ph-x"></i>
+            </button>
+            
+            <div class="lockscreen-modal-header">
+                <h2><i class="ph-bold ph-device-mobile"></i> <span data-i18n="nav_lockscreen">Tela de Bloqueio</span></h2>
+                <p>Configure como deseja receber a sabedoria diária no seu dispositivo.</p>
+            </div>
+
+            <div class="lockscreen-options-grid">
+                <!-- Opção 1: Notificação Diária no Despertar -->
+                <div class="lockscreen-option-card">
+                    <div class="opt-badge"><i class="ph-fill ph-alarm"></i> DESPERTAR AUTOMÁTICO</div>
+                    <h4>1. Notificação Matinal no Lockscreen</h4>
+                    <p>Receba o princípio do dia na tela de bloqueio todo dia ao acordar, com opção de leitura rápida ou narração em áudio.</p>
+                    
+                    <div class="alarm-time-row">
+                        <label for="lockscreen-wake-time"><i class="ph-bold ph-clock"></i> Horário do seu despertar:</label>
+                        <input type="time" id="lockscreen-wake-time" value="06:00">
+                    </div>
+
+                    <div class="opt-actions">
+                        <button id="btn-enable-lockscreen-notify" class="btn-gold-action">
+                            <i class="ph-bold ph-bell-ringing"></i> Ativar Despertador Diário
+                        </button>
+                        <button id="btn-test-lockscreen-notify" class="btn-secondary-action">
+                            <i class="ph-bold ph-paper-plane-tilt"></i> Testar no Celular Agora
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SELETOR GLOBAL DE FRASE PARA OS WALLPAPERS -->
+                <div class="lockscreen-option-card" style="border: 1px solid var(--gold-pure);">
+                    <div class="opt-badge" style="background: var(--gold-pure); color: #000;"><i class="ph-fill ph-pencil"></i> PERSONALIZAR</div>
+                    <h4>Escolha a Frase (Para os Wallpapers Abaixo)</h4>
+                    <p>Selecione exatamente qual mandamento você quer colocar no papel de parede.</p>
+                    <select id="wallpaper-phrase-select" style="width: 100%; padding: 10px; background: var(--surface-light); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit; margin-top: 10px; margin-bottom: 15px;">
+                        <option value="random">🌟 Frase Aleatória Surpresa</option>
+                        <!-- Populated by JS -->
+                    </select>
+
+                    <label style="font-size: 0.85rem; color: var(--text-muted);"><i class="ph-bold ph-palette"></i> Tema Visual do Card:</label>
+                    <div class="card-theme-selector" style="margin-top: 5px;">
+                        <button class="theme-btn theme-gold active" data-theme="gold" title="Nobre (Dourado)"></button>
+                        <button class="theme-btn theme-crimson" data-theme="crimson" title="Sangue (Vermelho)"></button>
+                        <button class="theme-btn theme-dark" data-theme="dark" title="Sombra (Platina)"></button>
+                    </div>
+                </div>
+
+                <!-- Opção 2: Wallpaper Celular -->
+                <div class="lockscreen-option-card">
+                    <div class="opt-badge"><i class="ph-fill ph-device-mobile"></i> CELULAR</div>
+                    <h4>Papel de Parede Celular (9:16)</h4>
+                    <p>Tamanho sob medida (1080x2400) com espaço para o relógio nativo do celular.</p>
+
+                    <div class="opt-actions">
+                        <button id="btn-generate-lockscreen-wallpaper" class="btn-gold-action">
+                            <i class="ph-bold ph-download-simple"></i> Baixar para Celular
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opção 3: Wallpaper Computador -->
+                <div class="lockscreen-option-card">
+                    <div class="opt-badge"><i class="ph-fill ph-monitor"></i> COMPUTADOR</div>
+                    <h4>Papel de Parede Desktop (16:9)</h4>
+                    <p>Gere um fundo de tela perfeito para o computador ou nova aba (1920x1080).</p>
+
+                    <div class="opt-actions">
+                        <button id="btn-generate-desktop-wallpaper" class="btn-gold-action">
+                            <i class="ph-bold ph-download-simple"></i> Baixar para Desktop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÕES (CONTA / PREFERÊNCIAS) -->
+    <div id="modal-settings" class="app-modal-overlay" style="display: none;">
+        <div class="app-modal-box settings-modal-box">
+            <button class="btn-modal-close" id="btn-close-settings-modal" aria-label="Fechar">
+                <i class="ph-bold ph-x"></i>
+            </button>
+            <div class="settings-modal-header" style="margin-bottom: 20px; text-align: center;">
+                <h2><i class="ph-bold ph-gear"></i> <span data-i18n="settings_title">Configurações da Conta</span></h2>
+                <p data-i18n="settings_desc" style="color: var(--text-secondary); font-size: 0.9rem;">Ajuste o idioma do site e suas preferências de áudio do podcast.</p>
+            </div>
+
+            <!-- PERFIL DO USUÁRIO -->
+            <div id="profile-section-logged-out" style="text-align: center; margin-bottom: 25px; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.2);">
+                <p style="margin-bottom: 10px; font-size: 0.95rem; color: var(--text-secondary);">Você não está logado. Crie seu perfil gratuito para salvar suas preferências e acessar recursos premium no futuro!</p>
+                <button id="btn-open-login-modal" class="btn-gold-action" style="padding: 10px 20px; font-size: 0.9rem;">
+                    <i class="ph-bold ph-sign-in"></i> Criar Conta / Entrar
+                </button>
+            </div>
+
+            <div id="profile-section-logged-in" style="display: none; margin-bottom: 25px; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div style="position: relative;">
+                        <img id="profile-avatar-img" src="" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-pure);">
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 id="profile-display-name" style="margin: 0; font-size: 1.1rem; color: var(--text-white);">Usuário</h3>
+                        <p id="profile-display-email" style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">usuario@email.com</p>
+                    </div>
+                    <button id="btn-logout" class="btn-icon-ambient" title="Sair da Conta">
+                        <i class="ph-bold ph-sign-out"></i>
+                    </button>
+                </div>
+
+                <div class="form-group-modal" style="margin-bottom: 10px; text-align: left;">
+                    <label for="ai-prompt-input" style="font-size: 0.85rem; color: var(--gold-pure);"><i class="ph-bold ph-infinity"></i> Infinitas Possibilidades (De A a Z):</label>
+                    <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; margin-bottom: 5px;">Você pode escolher da lista ou <strong>digitar literalmente qualquer coisa</strong> que não esteja nela.</p>
+                    <input type="text" id="ai-prompt-input" list="ai-prompts" placeholder="Ex: Digite o que sua imaginação mandar..." style="width: 100%; padding: 10px; background: #0a0a0a; border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit; font-size: 0.85rem;">
+                    <datalist id="ai-prompts">
+                        <!-- Preenchido via JavaScript -->
+                    </datalist>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="file" id="input-upload-avatar" accept="image/*" style="display: none;">
+                    <button id="btn-upload-avatar" class="btn-secondary-action" style="flex: 1; padding: 8px; font-size: 0.85rem;">
+                        <i class="ph-bold ph-image"></i> Galeria
+                    </button>
+                    <button id="btn-generate-avatar" class="btn-secondary-action" style="flex: 1; padding: 8px; font-size: 0.85rem;">
+                        <i class="ph-bold ph-magic-wand"></i> Gerar IA
+                    </button>
+                </div>
+
+                <div class="form-group-modal">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Não é obrigatório.</p>
+                    <label for="profile-birthdate">Data de Nascimento (Opcional):</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="date" id="profile-birthdate" style="flex: 1; padding: 10px; background: var(--surface-light); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit;">
+                        <button type="button" onclick="document.getElementById('profile-birthdate').value = ''" class="btn-icon-ambient" title="Limpar Data" style="padding: 0 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--surface-light); color: var(--text-muted); cursor: pointer;">
+                            <i class="ph-bold ph-eraser"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group-modal" style="margin-top: 20px;">
+                    <label for="select-ui-theme">Tema da Interface:</label>
+                    <select id="select-ui-theme" class="settings-select" style="width: 100%; padding: 12px; background: #000000; border: 1px solid var(--border-color); color: #ffffff; border-radius: 8px; font-family: inherit;">
+                        <option value="escuro" style="background: #000000; color: #ffffff;">Escuro (Padrão)</option>
+                        <option value="claro" style="background: #000000; color: #ffffff;">Claro</option>
+                        <optgroup label="Outras Cores" style="background: #000000; color: #ffffff;">
+                            <option value="esmeralda" style="background: #000000; color: #ffffff;">Esmeralda (Verde)</option>
+                            <option value="carmim" style="background: #000000; color: #ffffff;">Carmim (Vermelho)</option>
+                            <option value="oceano" style="background: #000000; color: #ffffff;">Oceano (Azul)</option>
+                            <option value="ametista" style="background: #000000; color: #ffffff;">Ametista (Roxo)</option>
+                            <option value="obsidiana" style="background: #000000; color: #ffffff;">Obsidiana (Preto Puro)</option>
+                            <option value="ambar" style="background: #000000; color: #ffffff;">Âmbar (Laranja)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+            <!-- PRIVACIDADE E SEGURANÇA -->
+            <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                <h4 style="margin-bottom: 10px; color: var(--gold-pure);"><i class="ph-bold ph-shield-check"></i> Privacidade e Segurança</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                    <strong>Offline & Seguro:</strong> Seus dados de perfil, data de nascimento e imagens são criptografados e salvos localmente. O Mente-Forjada garante 100% de privacidade.
+                </p>
+            </div>
+            
+
+            <div class="form-group-modal">
+                <label for="select-ui-lang" data-i18n="settings_ui_lang">Idioma do Site (Interface)</label>
+                <select id="select-ui-lang" class="settings-select" style="width: 100%; padding: 12px; background: #000000; border: 1px solid var(--border-color); color: #ffffff; border-radius: 8px; font-family: inherit;">
+                    <option value="pt-BR" style="background: #000000; color: #ffffff;">Português (Brasil)</option>
+                    <option value="en-US" style="background: #000000; color: #ffffff;">English</option>
+                    <option value="es-ES" style="background: #000000; color: #ffffff;">Español</option>
+                    <option value="fr-FR" style="background: #000000; color: #ffffff;">Français (Francês)</option>
+                    <option value="de-DE" style="background: #000000; color: #ffffff;">Deutsch (Alemão)</option>
+                    <option value="it-IT" style="background: #000000; color: #ffffff;">Italiano</option>
+                    <option value="ja-JP" style="background: #000000; color: #ffffff;">日本語 (Japonês)</option>
+                    <option value="zh-CN" style="background: #000000; color: #ffffff;">中文 (Chinês)</option>
+                </select>
+            </div>
+
+
+            <div class="modal-footer-actions" style="margin-top: 25px;">
+                <button id="btn-save-settings" class="btn-gold-action w-100">
+                    <i class="ph-bold ph-check"></i> <span data-i18n="settings_save">Salvar Preferências</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE BUSCA DE VOZES -->
+    <div id="modal-voice-search" class="app-modal-overlay" style="display: none;">
+        <div class="app-modal-box" style="max-width: 450px; height: 80vh; display: flex; flex-direction: column;">
+            <button class="btn-modal-close" onclick="document.getElementById('modal-voice-search').style.d
