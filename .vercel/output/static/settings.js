@@ -536,4 +536,47 @@ document.addEventListener('DOMContentLoaded', () => {
         populateDefaultList();
 
         // Ouve o que o usuário digita
-        promptInput.addEventLis
+        promptInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            // Se o usuário digitou mais de 2 letras, criamos 100 variações para a ideia dele
+            if (val.length > 2) {
+                populateCustomVariations(val);
+            } else {
+                // Se apagar o texto, volta a lista gigante infinita de A-Z
+                populateDefaultList();
+            }
+        });
+    }
+
+    if (btnUploadAvatar && inputUploadAvatar) {
+        btnUploadAvatar.addEventListener('click', () => {
+            inputUploadAvatar.click();
+        });
+
+        inputUploadAvatar.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64Img = event.target.result;
+                window.appSettings.profile.avatar = base64Img;
+                document.getElementById('profile-avatar-img').src = base64Img;
+                localStorage.setItem('mf_settings', JSON.stringify(window.appSettings));
+                if(window.showToast) window.showToast('Foto atualizada!', 'ph-image');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (inputBirthdate) {
+        inputBirthdate.addEventListener('change', (e) => {
+            if (window.appSettings.profile) {
+                window.appSettings.profile.birthdate = e.target.value;
+                localStorage.setItem('mf_settings', JSON.stringify(window.appSettings));
+            }
+        });
+    }
+
+    // window.speechSynthesis extirpado.
+});

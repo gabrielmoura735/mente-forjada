@@ -3918,4 +3918,41 @@ function initLockscreenNotifications() {
     }
 
     let selectedWTheme = 'gold';
-    const tBtns = document.querySelectorAll('.locksc
+    const tBtns = document.querySelectorAll('.lockscreen-modal-box .theme-btn');
+    tBtns.forEach(b => {
+        b.addEventListener('click', () => {
+            sfx.play('click');
+            tBtns.forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            selectedWTheme = b.getAttribute('data-theme');
+        });
+    });
+
+    if (btnGenWallMobile) {
+        btnGenWallMobile.addEventListener('click', () => {
+            sfx.play('star');
+            const all = getAllPrinciples();
+            let chosen;
+            if (selectPhrase && selectPhrase.value !== 'random') {
+                chosen = all.find(x => String(x.id) === selectPhrase.value);
+            }
+            if (!chosen) chosen = all[Math.floor(Math.random() * all.length)];
+            
+            generateLockscreenWallpaper(chosen, selectedWTheme);
+        });
+    }
+
+    if (btnGenWallDesktop) {
+        btnGenWallDesktop.addEventListener('click', () => {
+            sfx.play('star');
+            const all = getAllPrinciples();
+            let chosen;
+            if (selectPhrase && selectPhrase.value !== 'random') {
+                chosen = all.find(x => String(x.id) === selectPhrase.value);
+            }
+            if (!chosen) chosen = all[Math.floor(Math.random() * all.length)];
+            
+            generateDesktopWallpaper(chosen, selectedWTheme);
+        });
+    }
+    }

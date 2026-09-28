@@ -815,4 +815,157 @@
     <!-- MODAL DE BUSCA DE VOZES -->
     <div id="modal-voice-search" class="app-modal-overlay" style="display: none;">
         <div class="app-modal-box" style="max-width: 450px; height: 80vh; display: flex; flex-direction: column;">
-            <button class="btn-modal-close" onclick="document.getElementById('modal-voice-search').style.d
+            <button class="btn-modal-close" onclick="document.getElementById('modal-voice-search').style.display='none'" aria-label="Fechar">
+                <i class="ph-bold ph-x"></i>
+            </button>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <h2><i class="ph-bold ph-microphone-stage"></i> Escolher Voz</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Pesquise entre as 1000 vozes disponíveis</p>
+            </div>
+            
+            <div class="search-box-container" style="margin-bottom: 15px; position: relative;">
+                <i class="ph ph-magnifying-glass" style="position: absolute; left: 12px; top: 12px; color: var(--text-secondary);"></i>
+                <input type="text" id="voice-search-input" placeholder="Buscar voz por nome..." style="width: 100%; padding: 12px 12px 12px 40px; background: var(--surface-light); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit;">
+            </div>
+
+            <div id="voice-list-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px;">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE LOGIN / CADASTRO -->
+    <div id="modal-login" class="app-modal-overlay" style="display: none;">
+        <div class="app-modal-box" style="max-width: 400px;">
+            <button class="btn-modal-close" id="btn-close-login-modal" aria-label="Fechar">
+                <i class="ph-bold ph-x"></i>
+            </button>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2><i class="ph-bold ph-user-circle"></i> Mente-Forjada</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Crie seu perfil ou acesse sua conta.</p>
+            </div>
+            
+            <div class="form-group-modal" style="margin-bottom: 15px;">
+                <label for="login-name">Seu Nome (Para Perfil):</label>
+                <input type="text" id="login-name" placeholder="Ex: Marcus Aurelius" style="width: 100%; padding: 12px; background: var(--surface-light); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit;">
+            </div>
+
+            <div class="form-group-modal" style="margin-bottom: 15px;">
+                <label for="login-email">E-mail:</label>
+                <input type="email" id="login-email" placeholder="seu@email.com" style="width: 100%; padding: 12px; background: var(--surface-light); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit;">
+            </div>
+
+            <div class="form-group-modal" style="margin-bottom: 25px;">
+                <label for="login-password">Senha:</label>
+                <input type="password" id="login-password" placeholder="••••••••" style="width: 100%; padding: 12px; background: var(--surface-light); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 8px; font-family: inherit;">
+            </div>
+
+            <button id="btn-submit-login" class="btn-gold-action w-100" style="margin-bottom: 15px;">
+                <i class="ph-bold ph-sign-in"></i> Entrar / Cadastrar
+            </button>
+            
+            <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+                Aviso: Conta gratuita offline. Futuramente habilitará a assinatura premium (R$ 37,90) para nuvem.
+            </p>
+        </div>
+    </div>
+
+    <!-- CANVAS OCULTO PARA EXPORTAÇÃO DE CARDS EM ALTA DEFINIÇÃO (PNG RETINA) -->
+    <canvas id="canvas-card-export" width="1080" height="1080" style="display: none;"></canvas>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="app-toast" class="app-toast" style="display: none;">
+        <i class="ph-bold ph-check-circle" id="toast-icon"></i>
+        <span id="toast-text">Ação executada com sucesso!</span>
+    </div>
+
+    <!-- Modal da Comunidade & Feedback -->
+    <div class="app-modal-overlay" id="modal-community" style="display: none;">
+        <div class="app-modal-box" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <button class="btn-modal-close" onclick="document.getElementById('modal-community').style.display='none'">
+                <i class="ph-bold ph-x"></i>
+            </button>
+            <div class="settings-modal-header" style="text-align: center; margin-bottom: 20px;">
+                <h2><i class="ph-bold ph-heart"></i> Comunidade & Mural</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 10px;">
+                    Bem-vindo ao mural de depoimentos do Mente Forjada. Deixe sua sugestão e espalhe a energia boa com seus amigos!
+                </p>
+            </div>
+
+            <div class="community-composer" style="margin-bottom: 25px; background: var(--bg-card-hover); padding: 15px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                <textarea id="community-post-text" placeholder="O que você está achando do Mente Forjada? Deixe seu relato, sugestão ou insight..." style="width: 100%; height: 80px; background: var(--bg-void); border: 1px solid var(--border-metal); color: var(--text-primary); border-radius: 8px; padding: 10px; font-family: inherit; resize: none; margin-bottom: 15px;"></textarea>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <select id="community-post-tag" style="background: var(--bg-void); border: 1px solid var(--border-metal); color: var(--text-primary); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; font-family: inherit; cursor: pointer;">
+                            <option value="Relato">📖 Relato</option>
+                            <option value="Motivação">🔥 Motivação</option>
+                            <option value="Dúvida">❓ Dúvida</option>
+                            <option value="Sugestão">💡 Sugestão</option>
+                            <option value="Agradecimento">🙏 Agradecimento</option>
+                        </select>
+
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="community-post-anon" style="cursor: pointer; accent-color: var(--gold-pure);">
+                            Postar Anonimamente
+                        </label>
+                    </div>
+
+                    <button onclick="publishCommunityPost()" class="btn-gold-action" style="padding: 8px 20px; font-size: 0.9rem;">
+                        <i class="ph-bold ph-paper-plane-tilt"></i> Publicar
+                    </button>
+                </div>
+            </div>
+
+            <div class="community-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.9rem; color: var(--text-primary); font-weight: bold;">
+                    <i class="ph-bold ph-chats"></i> Mural
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <select id="community-filter-tag" onchange="renderCommunityFeed()" style="background: var(--bg-void); border: 1px solid var(--border-metal); color: var(--text-secondary); border-radius: 6px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer;">
+                        <option value="all">Todas as Tags</option>
+                        <option value="Relato">Relatos</option>
+                        <option value="Motivação">Motivação</option>
+                        <option value="Dúvida">Dúvidas</option>
+                        <option value="Sugestão">Sugestões</option>
+                        <option value="Agradecimento">Agradecimentos</option>
+                    </select>
+
+                    <select id="community-sort" onchange="renderCommunityFeed()" style="background: var(--bg-void); border: 1px solid var(--border-metal); color: var(--text-secondary); border-radius: 6px; padding: 4px 8px; font-size: 0.8rem; cursor: pointer;">
+                        <option value="recent">Mais Recentes</option>
+                        <option value="likes">Mais Curtidos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="community-feed" class="community-feed" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Feed gerado via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="audio-synth.js"></script>
+    <script src="settings.js?v=6"></script>
+    <script src="app.js?v=1790204380931"></script>
+    <script src="more_principles.js?v=2"></script>
+    <script src="features.js?v=3"></script>
+    <script src="community.js"></script>
+    <script>
+        // Registro do Service Worker para suporte Offline e Notificações no Lockscreen
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service Worker Mente Forjada ativo:', reg.scope))
+                    .catch((err) => console.warn('Service Worker não pôde ser registrado:', err));
+            });
+        }
+    </script>
+    
+</body>
+</html>
+
+
+
